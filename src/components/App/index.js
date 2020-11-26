@@ -3,6 +3,7 @@ import {
 } from 'react-router-dom';
 import Header from '../Header'
 import Main from '../Main';
+import News from '../News';
 import styles from './index.module.css'
 
 function App() {
@@ -10,7 +11,14 @@ function App() {
     <div className={styles.app}>
       <Router>
         <Header />
-        <Main />
+        <Switch>
+          <Route exact path="/">
+            <Main />
+          </Route>
+          <Route exact path="/:item/">
+            <News />
+          </Route>
+        </Switch>
       </Router>
     </div>
   );

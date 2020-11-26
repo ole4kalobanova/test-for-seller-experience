@@ -1,17 +1,17 @@
 import React from 'react';
-import Card from '@material-ui/core/Card';
-import CardActions from '@material-ui/core/CardActions';
-import CardContent from '@material-ui/core/CardContent';
-import Button from '@material-ui/core/Button';
-import Typography from '@material-ui/core/Typography';
-import styles from './index.module.css';
 import { useEffect, useState } from 'react';
+import styles from './index.module.css';
+import Card from '@material-ui/core/Card';
+import CardContent from '@material-ui/core/CardContent';
+import Typography from '@material-ui/core/Typography';
 import CardActionArea from '@material-ui/core/CardActionArea';
+import { Link } from 'react-router-dom';
 
 export default function Main() {
   const [topItems, settopItems] = useState([]);
   const [items, setItems] = useState([]);
 
+  //Получаем item 100 последних новостей
   useEffect(() => {
     (async () => {
       const response = await fetch("https://hacker-news.firebaseio.com/v0/newstories.json?print=pretty");
@@ -20,6 +20,7 @@ export default function Main() {
     })()
   }, []);
 
+  //Запрашиваем по item каждую новость
   useEffect(() => {
     let requests = topItems.map(item => fetch(`https://hacker-news.firebaseio.com/v0/item/${item}.json?print=pretty`));
     Promise.all(requests)
@@ -32,29 +33,28 @@ export default function Main() {
   return (
     <>
       {items && items.map((el) => (
-        < Card className={styles.cardInfo} key={el.id}>
-          <CardActionArea>
-            <CardContent>
-              <Typography color="textSecondary" gutterBottom>
-                {el.by}
-              </Typography>
-              <Typography variant="h5" component="h2">
-                {el.title}
-              </Typography>
-              <Typography color="textSecondary">
-                {new Date(el.time * 1000).toLocaleDateString()}
+        <Link to={`/${el.id}`} key={el.id}>
+          < Card className={styles.cardInfo} >
+            <CardActionArea>
+              <CardContent>
+                <Typography color="textSecondary" gutterBottom>
+                  {el.by}
+                </Typography>
+                <Typography variant="h5" component="h2">
+                  {el.title}
+                </Typography>
+                <Typography color="textSecondary">
+                  {new Date(el.time * 1000).toLocaleDateString()}
                 &nbsp;
                 {new Date(el.time * 1000).toLocaleTimeString()}
-              </Typography>
-              <Typography variant="body2" component="p">
-                Score:{el.score}
-              </Typography>
-            </CardContent>
-          </CardActionArea>
-          {/* <CardActions>
-            <Button size="small">Learn More</Button>
-          </CardActions> */}
-        </Card>
+                </Typography>
+                <Typography variant="body2" component="p">
+                  Score:{el.score}
+                </Typography>
+              </CardContent>
+            </CardActionArea>
+          </Card>
+        </Link>
       )
       )}
     </>
