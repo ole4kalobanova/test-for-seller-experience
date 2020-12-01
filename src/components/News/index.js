@@ -1,18 +1,19 @@
 import React from 'react';
 import { useEffect, useState } from 'react';
-import styles from './index.module.css';
+// import styles from './index.module.css';
 import { useParams } from 'react-router-dom';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import Typography from '@material-ui/core/Typography';
-import CardActionArea from '@material-ui/core/CardActionArea';
+import Comments from '../Comment';
+// import CardActionArea from '@material-ui/core/CardActionArea';
 
 export default function News() {
   const params = useParams();
   const [item, setItem] = useState([]);
   const [comment, setComment] = useState([]);
 
-  //Запрашиваем статью
+  // Запрашиваем статью
   useEffect(() => {
     (async () => {
       const response = await fetch(`https://hacker-news.firebaseio.com/v0/item/${params.item}.json?print=pretty`);
@@ -21,20 +22,32 @@ export default function News() {
     })()
   }, [params.item]);
 
-  //Запрашиваем корневые комментарии
+  // Запрашиваем корневые комментарии
   useEffect(() => {
     if (item.kids) {
       let requests = item.kids.map(comment => fetch(`https://hacker-news.firebaseio.com/v0/item/${comment}.json?print=pretty`));
       Promise.all(requests)
-        .then(responses => Promise.all(responses.map(r => r.json())))
+        .then(responses => Promise.all(responses.map(result => result.json())))
         .then(comment => setComment(comment));
     }
   }, [item.kids]);
   console.log(comment);
 
+  // Запрашиваем вложенные комментарии по клику
+  function kidsComment(obj) {
+    if (obj.kids) {
+      let requests = obj.kids.map(comment => fetch(`https://hacker-news.firebaseio.com/v0/item/${comment}.json?print=pretty`));
+      Promise.all(requests)
+        .then(responses => Promise.all(responses.map(result => result.json())))
+        .then(comment => {
+          obj.kids = comment;
+        });
+    }
+  }
+
   return (
     <>
-      < Card>
+      <Card>
         <CardContent>
           <Typography color="textSecondary" gutterBottom>
             {item.by}
@@ -50,26 +63,15 @@ export default function News() {
           <Typography variant="body2" component="p">
             URL:{item.url}
           </Typography>
+          <Typography variant="body2" component="p">
+            Comments:{item.descendants}
+          </Typography>
         </CardContent>
       </Card>
       {comment && comment.map((el) => (
-        < Card key={el.id}>
-          <CardContent>
-            <Typography color="textSecondary" gutterBottom>
-              {el.by}
-            </Typography>
-            <Typography color="textSecondary">
-              {new Date(el.time * 1000).toLocaleDateString()}
-                &nbsp;
-                {new Date(el.time * 1000).toLocaleTimeString()}
-            </Typography>
-            <Typography variant="body2" component="p">
-              {el.text}
-            </Typography>
-          </CardContent>
-        </Card>
-      ))}
-
+        <Comments comment={el} key={el.id} />
+      ))
+      }
     </>
   );
 }
